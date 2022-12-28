@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Otp = ({ otpDigits, otpTime }) => {
   const [verifyOtp, setVerifyOtp] = useState();
@@ -14,7 +13,6 @@ const Otp = ({ otpDigits, otpTime }) => {
   const [min, setMin] = useState(Math.floor(otpTime / 60));
 
   const inputRef = useRef();
-  const navigate = useNavigate();
 
   // NEW OTP
   const verify = () => {
@@ -25,7 +23,7 @@ const Otp = ({ otpDigits, otpTime }) => {
         temp += Math.floor(Math.random() * 10);
       });
     setVerifyOtp(temp);
-    setActiveIndex(0);
+    // setActiveIndex(0);
   };
 
   // SET TIMER
@@ -73,6 +71,7 @@ const Otp = ({ otpDigits, otpTime }) => {
   // OTP IS VERIFIED OR NOT
   const validOtpFunc = (otpArr) => {
     let otpFilledBool = false;
+
     otpFilledBool = otpArr.every((item) => {
       return item !== "";
     });
@@ -102,30 +101,30 @@ const Otp = ({ otpDigits, otpTime }) => {
   // ONCHANGE FUNC
   const otpVal = (event, index) => {
     let digitVal = event.currentTarget.value;
-    // if (/^[0-9]+$/.test(digitVal)) {
-      console.log("&&&&");
+
+    if (/^\d+$/.test(event.target.value) || event.currentTarget.value === "") {
       if (digitVal.length === otpDigits) {
         pasteOtp(digitVal);
         return;
-      } else if (digitVal.length > otpDigits) return;
-
-      var tempArr = [...current];
-
-      tempArr[index] = digitVal.substring(digitVal.length - 1);
-      setCurrent([...tempArr]);
-
-      // FORWARD & BACKWARD FUNC
-      if (digitVal) {
-        setActiveIndex(index + 1);
-      } else {
-        setActiveIndex(index - 1);
       }
-      validOtpFunc(tempArr);
-    // }
+      var tempArr = [...current];
+      if (digitVal) {
+        debugger;
+        tempArr[index] = digitVal.substring(digitVal.length - 1);
+        setCurrent([...tempArr]);
+        setActiveIndex(index + 1); //Forward
+      }
+    }
+    if (tempArr.length === otpDigits) validOtpFunc(tempArr);
   };
 
   const backward = (event, index) => {
-    if (event.key === "backspace") setActiveIndex(index - 1);
+    let tempArr = [...current];
+    if (event.key === "Backspace") {
+      setActiveIndex(index - 1);
+      tempArr[index] = "";
+    }
+    setCurrent([...tempArr]);
   };
 
   return (
@@ -146,7 +145,7 @@ const Otp = ({ otpDigits, otpTime }) => {
               key={index}
               ref={index === activeIndex ? inputRef : null}
               id={index}
-              type="number"
+              type="text"
               className={
                 current.length === otpDigits && otpFilled
                   ? validOtp
@@ -156,7 +155,7 @@ const Otp = ({ otpDigits, otpTime }) => {
               }
               onKeyDown={(event) => backward(event, index)}
               onChange={(event) => otpVal(event, index)}
-              value={current[index]}
+              value={current[index] ?? ""}
             ></input>
           );
         })}
