@@ -1,18 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const Otp = ({ otpDigits, otpTime }) => {
+import { useNavigate } from "react-router-dom";
+
+const OtpLayout = ({ otpDigits, otpTime }) => {
   const [verifyOtp, setVerifyOtp] = useState();
   const [attempt, setAttempt] = useState(4);
-  const [current, setCurrent] = useState([]);
-  const [validOtp, setValidOtp] = useState(null);
-  const [otpFilled, setOtpFilled] = useState(false);
+  const [current, setCurrent] = useState({});
   const [activeIndex, setActiveIndex] = useState(0);
+  const [validOtp, setValidOtp] = useState(null);
+  const [error, setError] = useState(null);
 
   const [sec, setSec] = useState(otpTime % 60);
   const [min, setMin] = useState(Math.floor(otpTime / 60));
 
-  const inputRef = useRef(null);
+  const inputRef = useRef();
+  const timer = useRef();
+  const Navigate = useNavigate();
 
   // NEW OTP
   const verify = () => {
@@ -49,12 +53,18 @@ const Otp = ({ otpDigits, otpTime }) => {
   }, []);
 
   useEffect(() => {
+    if (
+      Object.keys(current).length - 1 === activeIndex &&
+      activeIndex + 1 < otpDigits &&
+      activeIndex > -1
+    )
+      inputRef.current.select();
     inputRef.current?.focus();
   }, [activeIndex]);
 
-  // RESEND BTN
+  //   RESEND FUNC
   const resend = () => {
-    setCurrent([]);
+    setCurrent({});
     setAttempt(attempt - 1);
     if (attempt > 0) {
       verify();
@@ -69,73 +79,72 @@ const Otp = ({ otpDigits, otpTime }) => {
   };
 
   // OTP IS VERIFIED OR NOT
-  const validOtpFunc = (otpArr) => {
-    let otpFilledBool = false;
-
-    otpFilledBool = otpArr.every((item) => {
-      return item !== "";
-    });
-
-    if (otpArr.length === otpDigits && otpFilledBool) {
-      let text = otpArr.join("");
-      if (verifyOtp === text) {
-        setValidOtp(true);
-      } else {
-        setValidOtp(false);
-      }
+  const validOtpFunc = (otpObj) => {
+    clearTimeout(timer.current);
+    if (Object.keys(otpObj).length === otpDigits) {
+      timer.current = setTimeout(() => {
+        let otpArr = Object.values(otpObj);
+        let text = otpArr.join("");
+        if (verifyOtp === text) {
+          setValidOtp(true);
+          Navigate("/dashboard");
+        } else {
+          setValidOtp(false);
+          setActiveIndex(0);
+          setError(true);
+          setCurrent({});
+        }
+      }, 400);
     }
-    setOtpFilled(otpFilledBool);
   };
 
+  //   PASTE OTP FUNC
   const pasteOtp = (val) => {
     let tempArr = val.split("");
     if (tempArr.length > otpDigits) {
       tempArr.shift();
     }
-    console.log(tempArr, "After");
-    setCurrent([...tempArr]);
-    validOtpFunc(tempArr);
+    const obj = Object.assign({}, tempArr);
+    setCurrent({ ...obj });
+    validOtpFunc(obj);
   };
 
-  // ONCHANGE FUNC
+  //   ONCHANGE FUNC
   const otpVal = (event, index) => {
-    console.log(event.key, "key");
+    setError(null);
     let digitVal = event.target.value;
-    console.log(digitVal);
-    if (/^\d+$/.test(event.target.value) || event.currentTarget.value === "") {
-      if (digitVal.length >= otpDigits) {
-        pasteOtp(digitVal);
-        return;
-      }
-      var tempArr = [...current];
-      if (digitVal) {
-        tempArr[index] = digitVal.substring(digitVal.length - 1);
-        setCurrent([...tempArr]);
-        setActiveIndex(index + 1); //Forward
-      }
-    }
-    if (tempArr.length === otpDigits) validOtpFunc(tempArr);
-  };
-
-  const backward = (event, index) => {
-    console.log("back");
-    let tempArr = [...current];
-    if (event.key === "Backspace") {
-      setActiveIndex(index - 1);
-      tempArr[index] = "";
-    }
-    setCurrent([...tempArr]);
-  };
-
-  const handleFocus = useCallback(() => {
-    if (
-      current[activeIndex + 1] === "" &&
-      activeIndex + 1 < otpDigits &&
-      activeIndex > -1
+    if (digitVal.length === otpDigits && current[index]?.length === undefined) {
+      pasteOtp(digitVal);
+      return;
+    } else if (
+      digitVal.length === otpDigits + 1 &&
+      current[index]?.length !== undefined
     ) {
-      inputRef.current.select();
+      pasteOtp(digitVal);
+      return;
     }
-  }, [current]);
+    var temp = { ...current };
+    if (
+      digitVal.length <= 2 &&
+      event.nativeEvent.inputType !== "insertFromPaste"
+    ) {
+      temp[index] = digitVal.substring(digitVal.length - 1);
+      setCurrent({ ...temp });
+      setActiveIndex(index + 1); //Forward
+    }
+
+    validOtpFunc(temp);
+  };
+
+  //   BACKWARD FUNC
+  const backward = (event, index) => {
+    let tempObj = { ...current };
+    if (event.key === "Backspace") {
+      delete tempObj[index];
+      setActiveIndex(index - 1);
+    }
+    setCurrent({ ...tempObj });
+  };
 
   return (
     <div className="otpLayout">
@@ -154,17 +163,17 @@ const Otp = ({ otpDigits, otpTime }) => {
               key={index}
               ref={index === activeIndex ? inputRef : null}
               id={index}
-              onFocus={handleFocus}
+              autoComplete="off"
               type="text"
               className={
-                current.length === otpDigits && otpFilled
-                  ? validOtp
-                    ? "valid"
-                    : "invalid"
-                  : null
+                Object.keys(current).length === otpDigits
+                  ? validOtp && "valid"
+                  : error && "invalid"
               }
               onKeyDown={(event) => backward(event, index)}
-              onChange={(event) => otpVal(event, index)}
+              onChange={(event) => {
+                if (/^\d+$/.test(event.target.value)) otpVal(event, index);
+              }}
               value={current[index] ?? ""}
             ></input>
           );
@@ -184,7 +193,9 @@ const Otp = ({ otpDigits, otpTime }) => {
           {min < 10 ? "0" + min : min}:{sec < 10 ? "0" + sec : sec}
         </div>
       </section>
+      {/* <button onClick={validOtpFunc()}>Continue..</button> */}
     </div>
   );
 };
-export default Otp;
+
+export default OtpLayout;
