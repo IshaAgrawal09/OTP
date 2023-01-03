@@ -53,12 +53,6 @@ const OtpLayout = ({ otpDigits, otpTime }) => {
   }, []);
 
   useEffect(() => {
-    if (
-      Object.keys(current).length - 1 === activeIndex &&
-      activeIndex + 1 < otpDigits &&
-      activeIndex > -1
-    )
-      inputRef.current.select();
     inputRef.current?.focus();
   }, [activeIndex]);
 
@@ -132,7 +126,6 @@ const OtpLayout = ({ otpDigits, otpTime }) => {
       setCurrent({ ...temp });
       setActiveIndex(index + 1); //Forward
     }
-
     validOtpFunc(temp);
   };
 
@@ -193,7 +186,6 @@ const OtpLayout = ({ otpDigits, otpTime }) => {
           {min < 10 ? "0" + min : min}:{sec < 10 ? "0" + sec : sec}
         </div>
       </section>
-      {/* <button onClick={validOtpFunc()}>Continue..</button> */}
     </div>
   );
 };
