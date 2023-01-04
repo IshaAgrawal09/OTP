@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+// USED OBJECT IN THIS ...
 const OtpLayout = ({ otpDigits, otpTime }) => {
   const [verifyOtp, setVerifyOtp] = useState();
   const [attempt, setAttempt] = useState(4);
@@ -140,53 +141,55 @@ const OtpLayout = ({ otpDigits, otpTime }) => {
   };
 
   return (
-    <div className="otpLayout">
-      <h2>
-        Verify Email Address <span>({verifyOtp})</span>
-      </h2>
-      <hr />
+    <>
+      <div className="otpLayout">
+        <h2>
+          Verify Email Address <span>({verifyOtp})</span>
+        </h2>
+        <hr />
 
-      <h3>Enter {otpDigits} digits verification code</h3>
+        <h3>Enter {otpDigits} digits verification code</h3>
 
-      {Array(otpDigits)
-        .fill(0)
-        .map((_, index) => {
-          return (
-            <input
-              key={index}
-              ref={index === activeIndex ? inputRef : null}
-              id={index}
-              autoComplete="off"
-              type="text"
-              className={
-                Object.keys(current).length === otpDigits
-                  ? validOtp && "valid"
-                  : error && "invalid"
-              }
-              onKeyDown={(event) => backward(event, index)}
-              onChange={(event) => {
-                if (/^\d+$/.test(event.target.value)) otpVal(event, index);
-              }}
-              value={current[index] ?? ""}
-            ></input>
-          );
-        })}
-      <section>
-        <div>
-          <button
-            className="resend-btn"
-            onClick={resend}
-            disabled={min !== 0 || sec !== 0 || attempt === 0}
-          >
-            Resend One-time Passcode
-          </button>
-          <span>({attempt} attempts left)</span>
-        </div>
-        <div className="time">
-          {min < 10 ? "0" + min : min}:{sec < 10 ? "0" + sec : sec}
-        </div>
-      </section>
-    </div>
+        {Array(otpDigits)
+          .fill(0)
+          .map((_, index) => {
+            return (
+              <input
+                key={index}
+                ref={index === activeIndex ? inputRef : null}
+                id={index}
+                autoComplete="off"
+                type="text"
+                className={
+                  Object.keys(current).length === otpDigits
+                    ? validOtp && "valid"
+                    : error && "invalid"
+                }
+                onKeyDown={(event) => backward(event, index)}
+                onChange={(event) => {
+                  if (/^\d+$/.test(event.target.value)) otpVal(event, index);
+                }}
+                value={current[index] ?? ""}
+              ></input>
+            );
+          })}
+        <section>
+          <div>
+            <button
+              className="resend-btn"
+              onClick={resend}
+              disabled={min !== 0 || sec !== 0 || attempt === 0}
+            >
+              Resend One-time Passcode
+            </button>
+            <span>({attempt} attempts left)</span>
+          </div>
+          <div className="time">
+            {min < 10 ? "0" + min : min}:{sec < 10 ? "0" + sec : sec}
+          </div>
+        </section>
+      </div>
+    </>
   );
 };
 

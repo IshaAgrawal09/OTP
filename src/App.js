@@ -1,14 +1,13 @@
 import "./App.css";
-import OtpLayout from "./components/OtpLayout";
-import Dashboard from "./components/Dashboard";
+
 import { Route, Routes } from "react-router-dom";
+import Search from "./components/Search";
 
 function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<OtpLayout otpDigits={4} otpTime={10} />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Search />} />
       </Routes>
     </div>
   );

@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+// USED ARRAY IN THIS...
 const Otp = ({ otpDigits, otpTime }) => {
   const [verifyOtp, setVerifyOtp] = useState();
   const [attempt, setAttempt] = useState(4);
