@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
-
+import "./otp.css";
 import { useNavigate } from "react-router-dom";
 
 // USED OBJECT IN THIS ...
