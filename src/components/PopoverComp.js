@@ -17,7 +17,7 @@ const PopoverComp = (data, pathData) => {
           </TextStyles>
         </FlexChild>
         <FlexChild spacing="tight" wrap="noWrap">
-          <TextStyles fontweight="bold">Interests:</TextStyles>
+          <TextStyles fontweight="bold">Interests : </TextStyles>
           <TextStyles textcolor="light">{pathData}</TextStyles>
         </FlexChild>
         <FlexChild>

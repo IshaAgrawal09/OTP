@@ -23,6 +23,7 @@ const Search = () => {
 
   //   ONCHANGE FUNC
   const SearchFunc = (event) => {
+    setOptions([]);
     setLoading(true);
     clearTimeout(inputRef.current);
     inputRef.current = setTimeout(() => {
@@ -33,59 +34,67 @@ const Search = () => {
       window.controller = new AbortController();
       var signal = window.controller.signal;
 
-      //   FETCH REQUEST
-      fetch(
-        `https://testing-app-backend.bwpapps.com/meta/campaign/getAudience?query=${event}&shop_id=796`,
-        {
-          signal: signal,
-          headers: {
-            appcode: "eyJvbnl4IjoiYndwIiwibWV0YSI6Im1ldGEifQ==",
-            authorization:
-              "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VyX2lkIjoiNjM4ODg3ZDQ2NGEwOGE2MmJmMDhhZDNmIiwicm9sZSI6ImN1c3RvbWVyIiwiZXhwIjoxNjcyOTM4MjY1LCJpc3MiOiJodHRwczpcL1wvYXBwcy5jZWRjb21tZXJjZS5jb20iLCJ0b2tlbl9pZCI6IjYzYjZjYWQ5YmFlZjAxMWQ2ZTBkZjQ2MyJ9.FDiKHhIY1ZntbNdEEWjtk5r6QnRvQYbXnO9PjsO1Fu6YYz7VkkoiLGz_FmNelpGo46QCQV6xUBsE9ENnmYUhIe-tdZR3FDFsvC-sYELg_4NEfqBolo-aDMwfSlbmKMdJ6tgPVfq72np9AxgygDgpVCw7cklxOYZvpHgcidBy34WCGm3lnRVvTXp1Txp2pjBeZ4r7Rx253o5sgk9fyzL_paHlxZIG9y_czQzO_iflJCVo9u4iNtQloVTZg2_1CoQWdVnjo1N3Xj17zWZXzZeXp6JaGNiB355WsstRx0OtVCQdoKd7_lOgOlSdNXeKZgpmMm1nEOp19g_Cn5Y1uF9jVQ",
-            apptag: "bwp_meta",
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((actualData) => {
-          const { success, data } = actualData;
-
-          if (success) {
-            let tempArr = [];
-            data.map((item) => {
-              let path = [...item.path];
-              path.splice(0, 1);
-              let pathData = path.join(" > ");
-              tempArr.push({
-                id: item.id,
-                label: item.name,
-                value: item.name,
-                lname: item.path[0],
-                path: item.path,
-                popoverContent: PopoverComp(item, pathData),
-              });
-            });
-            setOptions([...tempArr]);
+      // FETCH REQUEST
+      if (event) {
+        fetch(
+          `https://testing-app-backend.bwpapps.com/meta/campaign/getAudience?query=${event}&shop_id=796`,
+          {
+            signal: signal,
+            headers: {
+              appcode: "eyJvbnl4IjoiYndwIiwibWV0YSI6Im1ldGEifQ==",
+              authorization:
+                "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VyX2lkIjoiNjM4ODg3ZDQ2NGEwOGE2MmJmMDhhZDNmIiwicm9sZSI6ImN1c3RvbWVyIiwiZXhwIjoxNjczMDEzNTU5LCJpc3MiOiJodHRwczpcL1wvYXBwcy5jZWRjb21tZXJjZS5jb20iLCJ0b2tlbl9pZCI6IjYzYjdmMGY3MTNhMTNkYzQ4MTBhZTI0ZCJ9.btZ0NCdtBPbl-t5Refjgyc1vobWLBv4lU_cvvYVFQM8RdF0t3ndJxN9TxIyXVQYDXoH8kREWlKAyKKncxBtz5M1k6o1z12Ksv8Cd10A9A2c4jHcc8wtcWUSB0vqD0veb0YZjDik7RinfdB0mW0J_Ib0MN3g04teInXFsApokcVLy7C6ZhoczZd_WhvRzK1zccGKIMVR5UIs3ScD9AARbsT-qb_3a_Kant4vVzX_Gm9S8EJVvPuXVf9lzBsaq3_y4YVUZpbipPU9ErDLU5GG0eAAeSX4p1m_kwbIai3EohuSz6Q1OugqNSRD_ie-m0rc69DWC3JPaF-S_eOa2FQuHpw",
+              apptag: "bwp_meta",
+            },
           }
-        })
-        .finally(() => setLoading(false));
+        )
+          .then((res) => res.json())
+          .then((actualData) => {
+            const { success, data } = actualData;
+
+            if (success) {
+              let tempArr = [];
+              data.map((item) => {
+                let path = [...item.path];
+                path.splice(0, 1);
+                let pathData = path.join(" > ");
+                tempArr.push({
+                  id: item.id,
+                  label: item.name,
+                  value: item.name,
+                  lname: item.path[0],
+                  path: item.path,
+                  popoverContent: PopoverComp(item, pathData),
+                });
+              });
+              setOptions([...tempArr]);
+            }
+          })
+          .finally(() => setLoading(false));
+      }
     }, 500);
     setSearchVal(event);
   };
 
   // ONCLICK FUNC
   const audienceFunc = (event) => {
-    let audience = options.find((item) => item.value === event);
+    var audience = options.find((item) => item.value === event);
     audience.path.splice(-1);
     let path = audience.path.join(" > ");
-
-    let tempobj = { ...selectedAudience };
-    if (tempobj.hasOwnProperty(path)) {
-      tempobj[path].push(audience.value);
-    } else {
-      tempobj[path] = [audience.value];
+    // DUPLICATE DATA
+    let audienceExist = "";
+    if (selectedAudience.hasOwnProperty(path)) {
+      audienceExist = selectedAudience[path].find(
+        (item) => audience.value === item
+      );
     }
-    setSelectedAudience({ ...tempobj });
+    if (!audienceExist) {
+      let tempobj = { ...selectedAudience };
+      if (tempobj.hasOwnProperty(path)) tempobj[path].push(audience.value);
+      else tempobj[path] = [audience.value];
+
+      setSelectedAudience({ ...tempobj });
+    }
     setSearchVal("");
   };
 
@@ -105,7 +114,7 @@ const Search = () => {
   };
 
   return (
-    <Card cardType="Bordered" desktopWidth="33" mobileWidth="100">
+    <Card cardType="Bordered">
       {Object.keys(selectedAudience)?.map((item) => {
         return (
           <Card cardType="Subdued" desktopWidth="33" mobileWidth="100">
@@ -135,7 +144,7 @@ const Search = () => {
       })}
 
       <FlexLayout>
-        <FlexChild desktopWidth="33" mobileWidth="100" tabWidth="100">
+        <FlexChild desktopWidth="50" mobileWidth="100">
           <AutoComplete
             className="searchField"
             onChange={SearchFunc}
